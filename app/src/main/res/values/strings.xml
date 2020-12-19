@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lets Learn</string>
+    <string name="Verify">Please enter a mobile number. You will recieve an SMS for authentication</string>
+    <string name="next">Next</string>
+    <string name="send_verification_code">Send Verification Code</string>
+    <string name="resend_sms">Resend SMS</string>
+    <string name="waiting_text">Waiting to automatically detect an SMS sent to\n %s Wrong Number?</string>
+</resources>

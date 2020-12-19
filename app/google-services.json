@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "680039305197",
+    "project_id": "lets-learn-11759",
+    "storage_bucket": "lets-learn-11759.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680039305197:android:75810a88fb474841fb61e4",
+        "android_client_info": {
+          "package_name": "com.example.letslearn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680039305197-mmea73j6tgi0b4sd70rsh62b4qrdkv8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.letslearn",
+            "certificate_hash": "99ffa12ef66625313f04d9e397d49ef01aa2af13"
+          }
+        },
+        {
+          "client_id": "680039305197-f3ovopf2hqfthj695q6lhqqjhs0r4043.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhF1ZSJrxuoqMovqxV_XL7MiBLN1wFIuE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680039305197-f3ovopf2hqfthj695q6lhqqjhs0r4043.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
