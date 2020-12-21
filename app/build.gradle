@@ -52,5 +52,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-database-ktx'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.android.exoplayer:exoplayer:2.12.2'
 
 }

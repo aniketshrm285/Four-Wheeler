@@ -2,15 +2,19 @@ package com.example.letslearn
 
 import android.Manifest
 import android.app.Activity
+import android.app.DownloadManager
+import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.os.Environment.DIRECTORY_DOWNLOADS
 import android.view.Menu
 import android.view.MenuItem
+import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.tasks.Continuation
@@ -27,7 +31,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.ArrayList
+
+
 const val TAG = "FILEPATH"
 class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
     private val storage by lazy {
@@ -57,7 +62,7 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar as Toolbar?)
         title = "All Files"
-        val fileAdapter = FileAdapter(files,this)
+        val fileAdapter = FileAdapter(files, this,this)
         filesRV.layoutManager = LinearLayoutManager(this)
         filesRV.adapter =fileAdapter
 
@@ -67,18 +72,19 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
         findNameOfCurrentUser()
 
         db.child("allPublicFiles")
-            .addValueEventListener(object :ValueEventListener{
+            .addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
 
                 }
 
                 override fun onDataChange(snapshot: DataSnapshot) {
                     files.clear()
-                    for(snap in snapshot.children){
+                    for (snap in snapshot.children) {
                         val nameOfFile = snap.child("name").value.toString()
-                        val uploadedBy:String = snap.child("uploadedBy").value.toString()
-                        val url:String = snap.child("url").value.toString()
-                        val file = File(nameOfFile,url,uploadedBy)
+                        val uploadedBy: String = snap.child("uploadedBy").value.toString()
+                        val url: String = snap.child("url").value.toString()
+                        val mimeType = snap.child("mimeType").value.toString()
+                        val file = File(nameOfFile, url, uploadedBy, mimeType)
                         files.add(file)
 
                     }
@@ -148,13 +154,13 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
             data?.data?.let {
                 MaterialAlertDialogBuilder(this).apply {
                     setMessage("How would you like to upload this file?\nPrivate or Public?")
-                    setPositiveButton("Public"){ _,_ ->
+                    setPositiveButton("Public"){ _, _ ->
                         //Toast.makeText(this@MainActivity, "Public", Toast.LENGTH_SHORT).show()
-                        uploadFile(it,false)
+                        uploadFile(it, false)
                     }
-                    setNegativeButton("Private"){dialogInterface, i ->
+                    setNegativeButton("Private"){ dialogInterface, i ->
                         //Toast.makeText(this@MainActivity, "Private", Toast.LENGTH_SHORT).show()
-                        uploadFile(it,true)
+                        uploadFile(it, true)
                     }
                     setCancelable(false)
                     create()
@@ -164,9 +170,16 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
         }
     }
 
-    private fun uploadFile(uri:Uri,isPrivate : Boolean) {
+    private fun uploadFile(uri: Uri, isPrivate: Boolean) {
         uploadBtn.isEnabled = false
+        val cR: ContentResolver = applicationContext.contentResolver
+        val type = cR.getType(uri)
+        val mime = MimeTypeMap.getSingleton()
+        val extType = mime.getExtensionFromMimeType(type)
         val ref = storageRef.child("uploads/" + uri.lastPathSegment + " by " + name + " at " + System.currentTimeMillis())
+
+
+
         val uploadTask = ref.putFile(uri)
         uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
             if (!task.isSuccessful) {
@@ -178,9 +191,8 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
         }).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val downloadUrl = task.result.toString()
-
-                val file = File(uri.lastPathSegment!!,downloadUrl,name)
-                uploadFileToRealtimeDatabase(file,isPrivate)
+                val file = File(uri.lastPathSegment!!, downloadUrl, name, type!!)
+                uploadFileToRealtimeDatabase(file, isPrivate)
             } else {
                 Toast.makeText(this, "File upload failed.", Toast.LENGTH_SHORT).show()
             }
@@ -193,40 +205,69 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
 
     private fun uploadFileToRealtimeDatabase(file: File, isPrivate: Boolean) {
         if(isPrivate){
-            db.child("privateFiles").child(auth.uid!!).child(System.currentTimeMillis().toString()).setValue(file)
+            db.child("privateFiles").child(auth.uid!!).child(System.currentTimeMillis().toString()).setValue(
+                file
+            )
         }
         else{
             val currTime = System.currentTimeMillis().toString()
             db.child("publicFiles").child(auth.uid!!).child(currTime).setValue(file)
-            db.child("allPublicFiles").child(currTime+auth.uid!!).setValue(file)
+            db.child("allPublicFiles").child(currTime + auth.uid!!).setValue(file)
         }
         Toast.makeText(this, "File uploaded.", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu,menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(item.itemId == R.id.myPublicFiles){
-            val i = Intent(this,PersonalFilesActivity::class.java)
-            i.putExtra("isPrivate",false)
+            val i = Intent(this, PersonalFilesActivity::class.java)
+            i.putExtra("isPrivate", false)
             startActivity(i)
         }
         else if(item.itemId == R.id.myPrivateFiles){
-            val i = Intent(this,PersonalFilesActivity::class.java)
-            i.putExtra("isPrivate",true)
+            val i = Intent(this, PersonalFilesActivity::class.java)
+            i.putExtra("isPrivate", true)
             startActivity(i)
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onItemClick(position: Int) {
-       // Toast.makeText(this, "Item Clicked.${files[position]}", Toast.LENGTH_SHORT).show()
-        val i = Intent(Intent.ACTION_VIEW,Uri.parse(files[position].url))
-        startActivity(i)
-        //Log.d(TAG, files[position].url)
+       val type= files[position].mimeType
+        val i = Intent(this,ViewFileActivity::class.java)
+
+        i.putExtra("fileName",files[position].name)
+        i.putExtra("fileUrl",files[position].url)
+        i.putExtra("mimeType",files[position].mimeType)
+        if(type.startsWith("image")){
+            i.putExtra("isImage",true)
+            startActivity(i)
+        }
+        else if(type.startsWith("video")){
+            i.putExtra("isImage",false)
+            startActivity(i)
+        }
+        else{
+            downloadFile(this,files[position],DIRECTORY_DOWNLOADS)
+        }
+    }
+
+    private fun downloadFile(context:Context,file : File,destinationDirectory:String){
+        val downloadManager : DownloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val uri = Uri.parse(file.url)
+        val request = DownloadManager.Request(uri)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+        val mime = MimeTypeMap.getSingleton()
+        val extType = mime.getExtensionFromMimeType(file.mimeType)
+
+        request.setDestinationInExternalFilesDir(context,destinationDirectory,file.name+"."+extType)
+        downloadManager.enqueue(request)
+        Toast.makeText(context, "File Downloading..", Toast.LENGTH_SHORT).show()
     }
 
 }

@@ -1,9 +1,13 @@
 package com.example.letslearn
 
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,7 +39,9 @@ class PersonalFilesActivity : AppCompatActivity(),FileAdapter.OnItemClickListene
         setContentView(R.layout.activity_personal_files)
         setSupportActionBar(toolbarPersonalActivity as Toolbar?)
 
-        val fileAdapter = FileAdapter(files,this)
+
+
+        val fileAdapter = FileAdapter(files,this,this)
         rvFiles.layoutManager = LinearLayoutManager(this)
         rvFiles.adapter =fileAdapter
 
@@ -61,7 +67,8 @@ class PersonalFilesActivity : AppCompatActivity(),FileAdapter.OnItemClickListene
                     val nameOfFile = snap.child("name").value.toString()
                     val uploadedBy: String = snap.child("uploadedBy").value.toString()
                     val url: String = snap.child("url").value.toString()
-                    val file = File(nameOfFile, url, uploadedBy)
+                    val mimeType = snap.child("mimeType").value.toString()
+                    val file = File(nameOfFile, url, uploadedBy,mimeType)
                     files.add(file)
 
                 }
@@ -78,7 +85,35 @@ class PersonalFilesActivity : AppCompatActivity(),FileAdapter.OnItemClickListene
     }
 
     override fun onItemClick(position: Int) {
-        val i = Intent(Intent.ACTION_VIEW, Uri.parse(files[position].url))
-        startActivity(i)
+        val type= files[position].mimeType
+        val i = Intent(this,ViewFileActivity::class.java)
+
+        i.putExtra("fileName",files[position].name)
+        i.putExtra("fileUrl",files[position].url)
+        i.putExtra("mimeType",files[position].mimeType)
+        if(type.startsWith("image")){
+            i.putExtra("isImage",true)
+            startActivity(i)
+        }
+        else if(type.startsWith("video")){
+            i.putExtra("isImage",false)
+            startActivity(i)
+        }
+        else{
+            downloadFile(this,files[position], Environment.DIRECTORY_DOWNLOADS)
+        }
+    }
+    private fun downloadFile(context: Context, file : File, destinationDirectory:String){
+        val downloadManager : DownloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val uri = Uri.parse(file.url)
+        val request = DownloadManager.Request(uri)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+        val mime = MimeTypeMap.getSingleton()
+        val extType = mime.getExtensionFromMimeType(file.mimeType)
+
+        request.setDestinationInExternalFilesDir(context,destinationDirectory,file.name+"."+extType)
+        downloadManager.enqueue(request)
+        Toast.makeText(context, "File Downloading..", Toast.LENGTH_SHORT).show()
     }
 }
