@@ -264,8 +264,13 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
 
         val mime = MimeTypeMap.getSingleton()
         val extType = mime.getExtensionFromMimeType(file.mimeType)
+        var finalFileName:String = file.name
 
-        request.setDestinationInExternalFilesDir(context,destinationDirectory,file.name+"."+extType)
+        if(!finalFileName.endsWith(extType!!)){
+            finalFileName+=".$extType"
+        }
+
+        request.setDestinationInExternalFilesDir(context,destinationDirectory,finalFileName)
         downloadManager.enqueue(request)
         Toast.makeText(context, "File Downloading..", Toast.LENGTH_SHORT).show()
     }
