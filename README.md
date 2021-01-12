@@ -9,7 +9,7 @@ Here we need to fill our mobile number in order to get authenticated.
 Now App will try to automatically detect the sent sms and will take you to your files.
 
 
-<img src="https://github.com/aniketshrm285/Four-Wheeler/blob/master/screenshots/second.jpeg" alt="Otp" width="290" height="600">
+<img src="https://user-images.githubusercontent.com/46931211/96804247-19dd9280-142c-11eb-866c-4ca6d273d8fb.jpeg" alt="Otp" width="290" height="600">
 
 Now you will see all your files(public and private) and public files of all other users. You can tap on upload button to upload any kind of file, before uploading, app will ask your prefrence on how would you like to upload this file. Public or Private.
 
