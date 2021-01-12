@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity(),FileAdapter.OnItemClickListener {
         }
         findNameOfCurrentUser()
 
+
+
         db.child("allPublicFiles")
             .addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
