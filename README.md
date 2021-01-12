@@ -1,5 +1,5 @@
-# Let's Learn
-An application for school aged kids where they can upload files both publicly and privately. And retrieve them whenever they want. This app uses firebase as database. 
+# Share Docs
+An application where you can upload files both publicly and privately. And retrieve them whenever you want. This app uses firebase as database. 
 
 Here we need to fill our mobile number in order to get authenticated.
 
@@ -20,3 +20,5 @@ You can see only your public and private files from the menu.
 
 
 <img src="https://github.com/aniketshrm285/Four-Wheeler/blob/master/screenshots/fourth.jpeg" alt="Otp" width="290" height="600">
+
+You can tap on files to access them. Media files will be shown in the app itself and there will be an option to download them as well. And all other files will be downloaded upon tapping.
