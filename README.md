@@ -1,4 +1,4 @@
-# Four-Wheeler
+# Let's Learn
 An application for school aged kids where they can upload files both publicly and privately. And retrieve them whenever they want. This app uses firebase as database. 
 
 Here we need to fill our mobile number in order to get authenticated.
